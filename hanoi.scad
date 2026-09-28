@@ -11,16 +11,16 @@
  * ============================================================
 
 /* [整体] */
-// 底座长 / 宽 / 厚 mm
-BASE_L = 190;
-BASE_W = 70;
+// 底座长 / 宽 / 厚 mm —— 宽 = 最大盘径,长容纳端柱大盘
+BASE_L = 280;
+BASE_W = 90;
 BASE_T = 16;
 BASE_R = 8;
 // 柱直径 / 露出高度 mm(顶含半球头)
-POLE_D = 18;
+POLE_D = 20;
 POLE_H = 95;
-// 柱间距 mm
-POLE_GAP = 60;
+// 柱间距 mm —— 必须 > 最大盘径,否则邻柱大盘相撞
+POLE_GAP = 95;
 
 /* [盘] */
 // 四盘外径(从大到小)mm —— 红线:最小 ≥ 45
@@ -100,9 +100,9 @@ module discs_line() {
 }
 
 module disc_stack() {
-    // 按大小套在中柱上(成品塔)
+    // 按大小套在中柱上(成品塔);盘底贴底座顶面
     for (i = [0:3])
-        translate([0, 0, BASE_T + i * DISC_H]) disc(DISC_OUTERS[i]);
+        translate([0, 0, BASE_T + DISC_H / 2 + i * DISC_H]) disc(DISC_OUTERS[i]);
 }
 
 module assembled() {
