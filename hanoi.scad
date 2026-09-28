@@ -72,8 +72,8 @@ module frame() {
         // 柱身 + 顶部半球圆头
         translate([px, 0, BASE_T]) cylinder(d = POLE_D, h = POLE_H - POLE_D / 2);
         translate([px, 0, BASE_T + POLE_H - POLE_D / 2]) sphere(d = POLE_D);
-        // 根部过渡圆角(斜锥)
-        translate([px, 0, BASE_T]) cylinder(d1 = POLE_D + 8, d2 = POLE_D, h = 6);
+        // 根部过渡锥(锥底必须 < 盘孔 24,否则盘会被架空落不到底)
+        translate([px, 0, BASE_T]) cylinder(d1 = POLE_D + 3, d2 = POLE_D, h = 6);
     }
 }
 
