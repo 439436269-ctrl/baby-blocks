@@ -9,6 +9,7 @@
 | 3-6 月(主打) | P1 咬咬积木 ×6 | 硅胶 Shore 00-50 | 本仓库交付：软骰子 / 点阵 / 同心环 / 编织纹 / 软胶球 |
 | 6-9 月 | P2 软叠叠杯 ×5 | 硅胶 Shore A10 | Φ55-95 嵌套，杯底排水孔 |
 | 9-12 月(监督使用) | P3 形状投放盒 | PETG 盒 + 硅胶块 | 硬质件不入口 |
+| 9-12 月+ | 汉诺塔 `hanoi.scad` | PETG 架 + 硅胶盘 ×4 | 三柱底座一体打印(监督使用)，盘 Φ48-90 可啃可煮 |
 
 ## 安全红线
 
@@ -26,7 +27,8 @@
 ```
 ├── 3D婴儿积木设计方案.md   # 完整设计方案(红线/工艺/验收/里程碑)
 ├── baby_blocks_p1.scad     # P1 参数化模型:5 款积木 + 两瓣硅胶模具
-├── renders/                # 渲染预览图(5 款积木 + 模具分解)
+├── hanoi.scad              # 汉诺塔:PETG 底座三柱 + 硅胶盘 ×4 + 盘模
+├── renders/                # 渲染预览图(积木 5 款 + 模具 + 汉诺塔 4 张)
 ├── render.ps1              # OpenSCAD 批量渲染脚本模板
 └── stl_vol.py              # STL 体积验证(signed volume + 包围盒)
 ```
@@ -62,3 +64,7 @@
 | ![dice](renders/dice.png) | ![dots](renders/dots.png) |
 | ![rings](renders/rings.png) | ![weave](renders/weave.png) |
 | ![ball](renders/ball.png) | ![mold](renders/mold.png) |
+| 汉诺塔成品 | |
+| ![hanoi](renders/hanoi_assembled.png) | ![hanoi frame](renders/hanoi_frame.png) |
+| 硅胶盘 ×4 | 盘浇注模具 |
+| ![hanoi discs](renders/hanoi_discs.png) | ![hanoi mold](renders/hanoi_mold.png) |
