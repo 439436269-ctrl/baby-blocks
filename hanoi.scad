@@ -11,8 +11,8 @@
  * ============================================================
 
 /* [整体] */
-// 底座长 / 宽 / 厚 mm —— 宽 = 最大盘径,长容纳端柱大盘
-BASE_L = 280;
+// 底座长 / 宽 / 厚 mm —— 长 240 适配拓竹 P2S 256 床(每侧留 8mm,端盘悬出 20mm)
+BASE_L = 240;
 BASE_W = 90;
 BASE_T = 16;
 BASE_R = 8;
@@ -94,9 +94,10 @@ module disc_profile(o) {
 module disc(o) rotate_extrude() disc_profile(o);
 
 module discs_line() {
-    // 四盘平铺展示
-    offs = [0, 100, 185, 255];
-    for (i = [0:3]) translate([offs[i] - 130, 0, DISC_H / 2]) disc(DISC_OUTERS[i]);
+    // 2x2 紧凑排布(约 175x160,适配拓竹 P2S 256x256 床)
+    pos = [[0, 0], [91.5, 0], [10, -83], [72, -83]];
+    for (i = [0:3])
+        translate([pos[i][0] - 42, pos[i][1] + 34, DISC_H / 2]) disc(DISC_OUTERS[i]);
 }
 
 module disc_stack() {
