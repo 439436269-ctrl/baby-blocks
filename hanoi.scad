@@ -14,8 +14,11 @@
 // 底座长 / 宽 / 厚 mm —— 长 240 适配拓竹 P2S 256 床(每侧留 8mm,端盘悬出 20mm)
 BASE_L = 240;
 BASE_W = 90;
-BASE_T = 16;
-BASE_R = 8;
+// 12mm 减薄 + 柱间减重孔,打印时间约省 1/3
+BASE_T = 12;
+BASE_R = 6;
+// 柱间减重孔直径 mm(设 0 关闭;孔缘距柱心净壁 10mm)
+LIGHT_HOLE = 55;
 // 柱直径 / 露出高度 mm(顶含半球头)
 POLE_D = 20;
 POLE_H = 95;
@@ -66,14 +69,22 @@ module rbox(sx, sy, sz, r = 6) {
 /* ============ 打印架:底座 + 三柱 ============ */
 
 module frame() {
-    translate([-BASE_L / 2, -BASE_W / 2, 0])
-        rbox(BASE_L, BASE_W, BASE_T, BASE_R);
-    for (px = [-POLE_GAP, 0, POLE_GAP]) {
-        // 柱身 + 顶部半球圆头
-        translate([px, 0, BASE_T]) cylinder(d = POLE_D, h = POLE_H - POLE_D / 2);
-        translate([px, 0, BASE_T + POLE_H - POLE_D / 2]) sphere(d = POLE_D);
-        // 根部过渡锥(锥底必须 < 盘孔 24,否则盘会被架空落不到底)
-        translate([px, 0, BASE_T]) cylinder(d1 = POLE_D + 3, d2 = POLE_D, h = 6);
+    difference() {
+        union() {
+            translate([-BASE_L / 2, -BASE_W / 2, 0])
+                rbox(BASE_L, BASE_W, BASE_T, BASE_R);
+            for (px = [-POLE_GAP, 0, POLE_GAP]) {
+                // 柱身 + 顶部半球圆头
+                translate([px, 0, BASE_T]) cylinder(d = POLE_D, h = POLE_H - POLE_D / 2);
+                translate([px, 0, BASE_T + POLE_H - POLE_D / 2]) sphere(d = POLE_D);
+                // 根部过渡锥(锥底必须 < 盘孔 24,否则盘会被架空落不到底)
+                translate([px, 0, BASE_T]) cylinder(d1 = POLE_D + 3, d2 = POLE_D, h = 6);
+            }
+        }
+        // 柱间减重孔(贯穿底座,省料省时)
+        if (LIGHT_HOLE > 0)
+            for (px = [-POLE_GAP / 2, POLE_GAP / 2])
+                translate([px, 0, -1]) cylinder(d = LIGHT_HOLE, h = BASE_T + 2);
     }
 }
 
