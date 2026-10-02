@@ -43,14 +43,18 @@ function egg_r(z) =
     ) max(r1, r2);
 
 module egg_profile() {
-    z0 = -EGG_RB;
+    z0 = -EGG_RB + 6;
     z1 = EGG_LIFT + EGG_RT;
-    polygon([for (z = [z0 : 1 : z1]) [max(0.01, egg_r(z)), z]]);
+    polygon(concat([[0.01, z0], [egg_r(z0) - 0.01, z0]],
+                   [for (z = [z0 + 1 : 1 : z1]) [max(0.01, egg_r(z)), z]]));
 }
 
 module ball_profile() {
-    polygon([for (a = [-90 : 2 : 90])
-        [max(0.01, BALL_R * cos(a)), BALL_R * sin(a)]]);
+    a0 = -56;
+    z0 = BALL_R * sin(a0);
+    polygon(concat([[0.01, z0], [BALL_R * cos(a0) - 0.01, z0]],
+                   [for (a = [a0 + 2 : 2 : 90])
+                       [max(0.01, BALL_R * cos(a)), BALL_R * sin(a)]]));
 }
 
 /* ---------- 内缩 + 截底 = 型腔(OpenSCAD 不支持模块传参,内联) ---------- */

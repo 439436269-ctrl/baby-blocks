@@ -36,7 +36,9 @@ function egg_r(z) =
     ) max(r1, r2);
 
 module egg_profile() {
-    polygon([for (z = [-EGG_RB : 1 : TOP]) [max(0.01, egg_r(z)), z]]);
+    z0 = -EGG_RB + 6;
+    polygon(concat([[0.01, z0], [egg_r(z0) - 0.01, z0]],
+                   [for (z = [z0 + 1 : 1 : TOP]) [max(0.01, egg_r(z)), z]]));
 }
 
 module trim_2d() {
@@ -99,36 +101,61 @@ module crest(w, t, h, z, y) {
     }
 }
 
-/* ---------- 12 生肖特征(z=蛋顶 46 附近) ---------- */
+/* ---------- 12 生肖特征 v2(顶部轮廓 + 脸部大五官) ---------- */
+// 眼:球心按比例埋入蛋面,凸出约 4mm
+module eyes(z, x, d) {
+    r = egg_r(z);
+    yy = r * 0.82;
+    for (s = [-1, 1]) translate([s * x, yy, z]) sphere(d = d);
+}
+// 前向圆锥鼻(根部埋入 2mm)
+module nose_cone(z, d, h) {
+    translate([0, egg_r(z) - 2, z]) rotate([-90, 0, 0])
+        cylinder(d1 = d, d2 = 1.5, h = h);
+}
+// 贴脸横纹(埋入)
+module cheek_bar(z, x, w) {
+    for (s = [-1, 1]) translate([s * x, egg_r(z) * 0.7, z]) rotate([0, 90, 0])
+        cylinder(d = 3.5, h = w, center = true);
+}
+
 module features(k) {
-    z = TOP - 6; // 特征基座高度(埋入蛋顶)
-    if (k == "rat") {           // 鼠:双圆耳+前鼻
+    z = TOP - 6;
+    if (k == "rat") {           // 鼠:大眼+尖鼻+圆耳
+        eyes(31, 10, 10); nose_cone(24, 7, 9);
         ear(-13, 6, z, 15); ear(13, 6, z, 15);
-        snout(30, z - 4, 12, 8);
-    } else if (k == "ox") {     // 牛:双上倾角+双小耳
+    } else if (k == "ox") {     // 牛:宽鼻盘+眼+上倾角
+        eyes(32, 11, 10);
+        translate([0, egg_r(24) + 1, 24]) rotate([-90, 0, 0]) cylinder(d = 16, h = 7, center = false);
         horn(-12, 2, z, 18, 5, -7); horn(12, 2, z, 18, 5, 7);
         ear(-16, 8, z - 4, 11); ear(16, 8, z - 4, 11);
-        snout(30, z - 8, 16, 7);
-    } else if (k == "tiger") {  // 虎:双圆耳+背纹三道(横脊)
+    } else if (k == "tiger") {  // 虎:大眼+鼻球+颊纹+圆耳
+        eyes(32, 11, 12); nose_cone(25, 9, 6);
+        cheek_bar(28, 14, 12); cheek_bar(22, 13, 11);
         ear(-14, 4, z, 16); ear(14, 4, z, 16);
-        for (dz = [4, -4, -12])
-            translate([0, egg_r(26 + dz) * 0.6, 26 + dz])
-                rotate([0, 90, 0]) cylinder(d = 4, h = 34, center = true);
-    } else if (k == "rabbit") { // 兔:双长竖耳(招牌)
+    } else if (k == "rabbit") { // 兔:小眼小鼻+招牌长耳
+        eyes(31, 9, 8); nose_cone(25, 6, 6);
         upright_ear(-9, 2, z, 0, 10, 24, -3);
         upright_ear(9, 2, z, 0, 10, 24, 3);
-    } else if (k == "dragon") { // 龙:后倾双角+背脊
+    } else if (k == "dragon") { // 龙:眼+鼻+后倾角
+        eyes(31, 10, 10); nose_cone(24, 8, 7);
         horn(-11, -4, z, 20, 5, -5); horn(11, -4, z, 20, 5, 5);
         for (i = [0:3])
-            translate([0, -18 + i * 9, egg_r(-18 + i * 9) + 1])
+            translate([0, -18 + i * 9, egg_r(-18 + i * 9) - 1])
                 rotate([0, 60, 0]) cylinder(d = 6, h = 10, center = true);
-    } else if (k == "snake") {  // 蛇:眼镜蛇兜帽(后上方宽鳍)
+    } else if (k == "snake") {  // 蛇:超大眼+兜帽鳍(无鼻)
+        eyes(31, 11, 14);
         hull() {
-            translate([0, -14, z]) rotate([-25, 0, 0]) cylinder(d = 8, h = 4, center = true);
-            translate([0, -20, z + 15]) rotate([-25, 0, 0]) cylinder(d = 22, h = 4, center = true);
+            translate([0, -11, z]) rotate([-25, 0, 0]) cylinder(d = 9, h = 5, center = true);
+            translate([0, -17, z + 15]) rotate([-25, 0, 0]) cylinder(d = 24, h = 5, center = true);
         }
         ear(-8, 8, z + 2, 8); ear(8, 8, z + 2, 8);
-    } else if (k == "horse") {  // 马:竖尖耳+鬃脊
+    } else if (k == "horse") {  // 马:眼+长鼻梁+耳鬃
+        eyes(32, 10, 10);
+        hull() {
+            translate([0, egg_r(26) * 0.8, 26]) sphere(d = 8);
+            translate([0, egg_r(34) * 0.8, 34]) sphere(d = 9);
+        }
         upright_ear(-8, 0, z, 0, 9, 18, -2);
         upright_ear(8, 0, z, 0, 9, 18, 2);
         hull() {
@@ -136,29 +163,31 @@ module features(k) {
             translate([0, -26, egg_r(-26) + 2]) sphere(d = 5);
             translate([0, -10, z + 16]) sphere(d = 4);
         }
-    } else if (k == "goat") {   // 羊:后卷短角(两段)+垂须
+    } else if (k == "goat") {   // 羊:眼+鼻+卷角+须(须已埋)
+        eyes(31, 10, 10); nose_cone(25, 7, 6);
         horn(-12, -2, z, 12, 4, -6); horn(12, -2, z, 12, 4, 6);
         horn(-12, -8, z + 8, 8, 3.5, -4); horn(12, -8, z + 8, 8, 3.5, 4);
-        translate([0, 28, z - 14]) cylinder(d = 6, h = 14, center = true);
-    } else if (k == "monkey") { // 猴:大侧圆耳
+        translate([0, 23, z - 14]) cylinder(d = 7, h = 16, center = true);
+    } else if (k == "monkey") { // 猴:大眼+小鼻+大侧耳
+        eyes(32, 11, 13); nose_cone(25, 8, 5);
         ear(-20, 0, z - 6, 15); ear(20, 0, z - 6, 15);
-        snout(30, z - 6, 13, 7);
-    } else if (k == "rooster"){// 鸡:顶冠三球+前喙
+    } else if (k == "rooster"){// 鸡:眼+喙+肉髯+冠
+        eyes(31, 9, 8);
+        translate([0, egg_r(25) - 2, 25]) rotate([-90, 0, 0]) cylinder(d1 = 9, d2 = 1.5, h = 12);
+        translate([0, egg_r(19) + 1, 19]) sphere(d = 7);   // 冠下肉髯
         for (i = [-1:1])
             translate([i * 8, -2 + abs(i) * -3, z + 10 - abs(i) * 3]) sphere(d = i == 0 ? 13 : 11);
-        translate([0, 30, z - 4]) rotate([60, 0, 0]) cylinder(d1 = 9, d2 = 2, h = 12);
         ear(-10, 4, z - 6, 9); ear(10, 4, z - 6, 9);
-    } else if (k == "dog") {    // 狗:垂耳(贴面扁片)+鼻
+    } else if (k == "dog") {    // 狗:圆鼻+眼+垂耳
+        eyes(31, 10, 10); snout(31, z - 6, 12, 8);
         upright_ear(-18, 4, z - 8, 0, 10, 22, -4);
         upright_ear(18, 4, z - 8, 0, 10, 22, 4);
-        snout(31, z - 6, 12, 8);
-    } else if (k == "pig") {    // 猪:大鼻盘+竖耳
-        snout(32, z - 6, 20, 8);
+    } else if (k == "pig") {    // 猪:大鼻盘+眼+竖耳
+        snout(32, z - 6, 20, 8); eyes(32, 12, 10);
         upright_ear(-9, -2, z, 0, 11, 15, -3);
         upright_ear(9, -2, z, 0, 11, 15, 3);
     }
 }
-
 module zodiac_one(k) {
     egg_body();
     features(k);
