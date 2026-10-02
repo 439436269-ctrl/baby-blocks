@@ -165,13 +165,22 @@ module zodiac_one(k) {
 }
 
 /* ---------- 输出 ---------- */
+// PLATE 选板:1=鼠牛虎兔龙蛇 / 2=马羊猴鸡狗猪
+PLATE = 1; // [1, 2]
+
+module zodiac_one(k) {
+    egg_body();
+    features(k);
+}
+
 if (VIEW == "figure") {
     zodiac_one(ZODIAC);
 } else {
-    // plate:同板 6 只(3x2,间距 78,适配 256 床;12 款分两板)
-    ks = (ZODIAC == "rat") ? ["rat", "ox", "tiger", "rabbit", "dragon", "snake"]
-                           : ["horse", "goat", "monkey", "rooster", "dog", "pig"];
+    // 打印排版:3x2 居中(列距78/行距84),单板 6 只,256 床两板打完 12 款
+    ks = (PLATE == 1)
+        ? ["rat", "ox", "tiger", "rabbit", "dragon", "snake"]
+        : ["horse", "goat", "monkey", "rooster", "dog", "pig"];
     for (i = [0:5])
-        translate([(i % 3 - 1) * 78, (i < 3 ? 45 : -45) - 16, 0])
-            rotate([0, 0, i * 40]) zodiac_one(ks[i]);
+        translate([(i % 3 - 1) * 78, (i < 3 ? 42 : -42), 0])
+            zodiac_one(ks[i]);
 }
