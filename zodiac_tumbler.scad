@@ -21,7 +21,7 @@ CAP_Z = -8;
 EGG_RB = 36;
 EGG_RT = 18;
 EGG_LIFT = 28;
-TEX_H = 1.5;
+TEX_H = 0;   // no rings: no overhang ledges, no layer jumps (first-principles cut)
 // 蛋顶绝对高度 = EGG_LIFT + EGG_RT = 46
 TOP = EGG_LIFT + EGG_RT; // 46
 

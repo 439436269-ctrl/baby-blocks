@@ -21,7 +21,7 @@ WALL = 3.5;
 // 底部配重帽分界高度 z(越低帽越小)
 CAP_Z = -8;
 // 防滑环凸起高 mm
-TEX_H = 1.5;
+TEX_H = 0;   // no rings: no overhang ledges, no layer jumps (first-principles cut)
 
 /* [蛋形] */
 EGG_RB = 36;   // 底球半径
