@@ -36,7 +36,7 @@ function egg_r(z) =
     ) max(r1, r2);
 
 module egg_profile() {
-    z0 = -EGG_RB + 6;
+    z0 = -EGG_RB + 0.5;
     polygon(concat([[0.01, z0], [egg_r(z0) - 0.01, z0]],
                    [for (z = [z0 + 1 : 1 : TOP]) [max(0.01, egg_r(z)), z]]));
 }

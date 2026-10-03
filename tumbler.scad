@@ -43,14 +43,14 @@ function egg_r(z) =
     ) max(r1, r2);
 
 module egg_profile() {
-    z0 = -EGG_RB + 6;
+    z0 = -EGG_RB + 0.5;
     z1 = EGG_LIFT + EGG_RT;
     polygon(concat([[0.01, z0], [egg_r(z0) - 0.01, z0]],
                    [for (z = [z0 + 1 : 1 : z1]) [max(0.01, egg_r(z)), z]]));
 }
 
 module ball_profile() {
-    a0 = -56;
+    a0 = asin(-34.5 / BALL_R);
     z0 = BALL_R * sin(a0);
     polygon(concat([[0.01, z0], [BALL_R * cos(a0) - 0.01, z0]],
                    [for (a = [a0 + 2 : 2 : 90])
