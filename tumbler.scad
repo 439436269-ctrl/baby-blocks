@@ -17,9 +17,9 @@ PART = "egg"; // [egg, ball]
 
 /* [壁与造型] */
 // 壁厚(内缩量)mm
-WALL = 3.5;
+WALL = 2.6;
 // 底部配重帽分界高度 z(越低帽越小)
-CAP_Z = 0;
+CAP_Z = -10;
 // 防滑环凸起高 mm
 TEX_H = 0;   // no rings: no overhang ledges, no layer jumps (first-principles cut)
 
