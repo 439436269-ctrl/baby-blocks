@@ -19,7 +19,7 @@ PART = "egg"; // [egg, ball]
 // 壁厚(内缩量)mm
 WALL = 3.5;
 // 底部配重帽分界高度 z(越低帽越小)
-CAP_Z = -8;
+CAP_Z = 0;
 // 防滑环凸起高 mm
 TEX_H = 0;   // no rings: no overhang ledges, no layer jumps (first-principles cut)
 
@@ -37,14 +37,13 @@ $fn = 96;
 // 蛋形外轮廓真实截面半径
 function egg_r(z) =
     let (
-        r1 = (z >= -EGG_RB && z <= EGG_RB) ? sqrt(EGG_RB * EGG_RB - z * z) : 0,
-        r2 = (z >= EGG_LIFT - EGG_RT && z <= EGG_LIFT + EGG_RT)
-            ? sqrt(EGG_RT * EGG_RT - (z - EGG_LIFT) * (z - EGG_LIFT)) : 0
+        CB = 0, RB = 40, CT = 38, RT = 13,
+        r1 = (z >= CB - RB && z <= CB + RB) ? sqrt(RB * RB - (z - CB) * (z - CB)) : 0,
+        r2 = (z >= CT - RT && z <= CT + RT) ? sqrt(RT * RT - (z - CT) * (z - CT)) : 0
     ) max(r1, r2);
-
 module egg_profile() {
-    z0 = -EGG_RB + 0.5;
-    z1 = EGG_LIFT + EGG_RT;
+    z0 = -39.5; // flat pad Phi12 at big-end pole
+    z1 = 51;
     polygon(concat([[0.01, z0], [egg_r(z0) - 0.01, z0]],
                    [for (z = [z0 + 1 : 1 : z1]) [max(0.01, egg_r(z)), z]]));
 }
