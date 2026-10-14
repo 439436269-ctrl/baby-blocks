@@ -1,52 +1,66 @@
 /* ============================================================
  * 不倒翁系列 tumbler.scad(9 月龄+ 硬料一体,零嵌入)
  * ------------------------------------------------------------
- * 回正原理:上部为 3.5mm 薄壳空腔 + 底部实心配重帽(几何一体,
- *          不嵌件)。切片务必 **填充 100%**(壳区全是墙、实心区
- *          打满 → 整体近均匀密度,几何重心即真实重心,蛋形实测
- *          约 -7mm、球形更深,推倒即回正)。15% 填充会让壳墙
- *          相对过重而重心上漂失效。
- * 构造:旋转体 2D 母线 → offset(-3.5) 精确平行内缩保证全域
- *          壁厚 → 底部截断出配重帽。顶部空腔收口免支撑。
+ * 回正原理:底部几何实心配重 + 上部空腔,重心低于球心(实测
+ *          egg 约 -10mm),推倒即回正。切片 **填充 100%**。
+ * 蛋形 v3:hull of two spheres(凸包平滑,无双球相贯蘑菇头);
+ *          内腔 = 外凸包球半径同减 WALL(凸包下精确平行内缩);
+ *          平底 Phi12 切于大端极点(实心帽区切面自然封闭)。
  * 定位:推倒回正+滚动;不作牙胶不啃咬
- * 安全:高 ≥84 / 直径 70,一体无小件无磁铁
+ * 安全:高 90 / 直径 80,一体无小件无磁铁
  * ============================================================
 
 /* [选择] */
 PART = "egg"; // [egg, ball]
 
 /* [壁与造型] */
-// 壁厚(内缩量)mm
-WALL = 2.6;
-// 底部配重帽分界高度 z(越低帽越小)
-CAP_Z = -10;
-// 防滑环凸起高 mm
-TEX_H = 0;   // no rings: no overhang ledges, no layer jumps (first-principles cut)
+WALL = 2.6;    // shell thickness mm
+CAP_Z = -10;   // ball: solid cap zone below this z
+TEX_H = 0;     // rings off (no overhang ledges)
 
-/* [蛋形] */
-EGG_RB = 36;   // 底球半径
-EGG_RT = 18;   // 顶球半径(收小,压低上部质量)
-EGG_LIFT = 28; // 顶球心高
+/* [egg hull] */
+EGG_RB = 40;   // big (bottom) sphere radius, center z=0
+EGG_CT = 38;   // small (top) sphere center height
+EGG_RT = 13;   // small sphere radius
+EGG_PAD_Z = -39.5;  // flat pad cut plane (Phi12 contact)
+CAP_EGG = -10;      // egg: solid ballast below this z
 
-/* [球形] */
+/* [ball] */
 BALL_R = 35;
 
 $fn = 96;
 
-/* ---------- 母线(2D,x=半径,y=z) ---------- */
-// 蛋形外轮廓真实截面半径
-function egg_r(z) =
-    let (
-        CB = 0, RB = 40, CT = 38, RT = 13,
-        r1 = (z >= CB - RB && z <= CB + RB) ? sqrt(RB * RB - (z - CB) * (z - CB)) : 0,
-        r2 = (z >= CT - RT && z <= CT + RT) ? sqrt(RT * RT - (z - CT) * (z - CT)) : 0
-    ) max(r1, r2);
-module egg_profile() {
-    z0 = -39.5; // flat pad Phi12 at big-end pole
-    z1 = 51;
-    polygon(concat([[0.01, z0], [egg_r(z0) - 0.01, z0]],
-                   [for (z = [z0 + 1 : 1 : z1]) [max(0.01, egg_r(z)), z]]));
+/* ---------- egg: 3D hull (smooth, exact offset cavity) ---------- */
+module egg_outer() {
+    hull() {
+        sphere(r = EGG_RB);
+        translate([0, 0, EGG_CT]) sphere(r = EGG_RT);
+    }
 }
+
+module egg_keep() {
+    translate([-60, -60, EGG_PAD_Z]) cube([120, 120, 120]); // keep z >= pad
+}
+
+module egg_cavity() {
+    intersection() {
+        hull() {
+            sphere(r = EGG_RB - WALL);
+            translate([0, 0, EGG_CT]) sphere(r = EGG_RT - WALL);
+        }
+        translate([-60, -60, CAP_EGG]) cube([120, 120, 140]); // only z >= CAP_EGG
+    }
+}
+
+module egg() {
+    difference() {
+        intersection() { egg_outer(); egg_keep(); }
+        egg_cavity();
+    }
+}
+
+/* ---------- ball: 2D profile (unchanged) ---------- */
+function ball_r(z) = sqrt(max(0, BALL_R * BALL_R - z * z));
 
 module ball_profile() {
     a0 = asin(-34.5 / BALL_R);
@@ -56,41 +70,15 @@ module ball_profile() {
                        [max(0.01, BALL_R * cos(a)), BALL_R * sin(a)]]));
 }
 
-/* ---------- 内缩 + 截底 = 型腔(OpenSCAD 不支持模块传参,内联) ---------- */
-module trim_2d() {
+module ball_trim_2d() {
     intersection() {
-        translate([-5, -100]) square([110, 200]);      // x in [0,100]
-        translate([-5, CAP_Z]) square([110, 200]);     // y >= CAP_Z
+        translate([-5, -100]) square([110, 200]);
+        translate([-5, CAP_Z]) square([110, 200]);
     }
 }
-module egg_cav() { intersection() { offset(r = -WALL) egg_profile(); trim_2d(); } }
-module ball_cav() { intersection() { offset(r = -WALL) ball_profile(); trim_2d(); } }
 
-/* ---------- 防滑环(贴真实外表面) ---------- */
-module egg_rings() {
-    if (TEX_H > 0)
-        for (z = [-14, 0, 14]) {
-            rr = egg_r(z);
-            if (rr > 3)
-                translate([0, 0, z]) rotate_extrude() translate([rr, 0]) circle(r = TEX_H);
-        }
-}
-
-module ball_rings() {
-    if (TEX_H > 0)
-        for (z = [-16, 0, 16]) {
-            rr = sqrt(BALL_R * BALL_R - z * z);
-            translate([0, 0, z]) rotate_extrude() translate([rr, 0]) circle(r = TEX_H);
-        }
-}
-
-/* ---------- 输出 ---------- */
-module egg() {
-    difference() {
-        rotate_extrude() egg_profile();
-        rotate_extrude() egg_cav();
-    }
-    egg_rings();
+module ball_cav() {
+    intersection() { offset(r = -WALL) ball_profile(); ball_trim_2d(); }
 }
 
 module ball_t() {
@@ -98,7 +86,7 @@ module ball_t() {
         rotate_extrude() ball_profile();
         rotate_extrude() ball_cav();
     }
-    ball_rings();
 }
 
+/* ---------- output ---------- */
 if (PART == "egg") egg(); else ball_t();
